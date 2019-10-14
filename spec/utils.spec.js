@@ -37,6 +37,63 @@ describe('formatDates', () => {
 	});
 });
 
-describe('makeRefObj', () => {});
+describe('makeRefObj', () => {
+	it('returns an object', () => {
+		expect(makeRefObj([])).to.be.an('object');
+	});
+	it('returns an empty object if passed an empty array', () => {
+		expect(makeRefObj([])).to.eql({});
+	});
+	it('can create a reference obj for an passed obj', () => {
+		const article = [
+			{
+				article_id: 12,
+				title: 'Living in the shadow of a great man',
+				topic: 'mitch',
+				author: 'butter_bridge',
+				body: 'I find this existence challenging',
+				created_at: 1542284514171,
+				votes: 100
+			}
+		];
+		expect(makeRefObj(article)).to.eql({ 'Living in the shadow of a great man': 12 });
+	});
+	it('can create a reference obj for an array of objects', () => {
+		const article = [
+			{
+				article_id: 12,
+				title: 'Living in the shadow of a great man',
+				topic: 'mitch',
+				author: 'butter_bridge',
+				body: 'I find this existence challenging',
+				created_at: 1542284514171,
+				votes: 100
+			},
+			{
+				article_id: 14,
+				title: 'Eight pug gifs that remind me of mitch',
+				topic: 'mitch',
+				author: 'icellusedkars',
+				body: 'some gifs',
+				created_at: 1289996514171
+			},
+			{
+				article_id: 32,
+				title: 'Student SUES Mitch!',
+				topic: 'mitch',
+				author: 'rogersop',
+				body:
+					'We all love Mitch and his wonderful, unique typing style. However, the volume of his typing has ALLEGEDLY burst another students eardrums, and they are now suing for damages',
+				created_at: 1163852514171
+			}
+		];
+		const output = {
+			'Living in the shadow of a great man': 12,
+			'Eight pug gifs that remind me of mitch': 14,
+			'Student SUES Mitch!': 32
+		};
+		expect(makeRefObj(article)).to.eql(output);
+	});
+});
 
 describe('formatComments', () => {});

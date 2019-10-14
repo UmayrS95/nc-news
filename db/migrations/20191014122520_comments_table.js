@@ -6,7 +6,7 @@ exports.up = function (connection) {
 		commentsTable.integer('article_id').references('articles.article_id');
 		commentsTable.integer('votes').defaultsTo(0);
 		commentsTable.timestamp('created_at').defaultsTo(connection.fn.now());
-		commentsTable.string('body');
+		commentsTable.text('body');
 	});
 };
 
