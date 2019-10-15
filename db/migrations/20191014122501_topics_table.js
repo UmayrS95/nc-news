@@ -1,5 +1,5 @@
 exports.up = function (connection) {
-	console.log('making topics table...');
+	console.log('creating topics table...');
 	return connection.schema.createTable('topics', (topicsTable) => {
 		topicsTable.string('slug').primary().unique();
 		topicsTable.string('description');
