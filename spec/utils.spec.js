@@ -2,9 +2,6 @@ const { expect } = require('chai');
 const { formatDates, makeRefObj, formatComments } = require('../db/utils/utils');
 
 describe('formatDates', () => {
-	it('returns an array', () => {
-		expect(formatDates([])).to.be.an('array');
-	});
 	it('returns an empty array if passed an empty array', () => {
 		expect(formatDates([])).to.eql([]);
 	});
@@ -52,9 +49,6 @@ describe('formatDates', () => {
 });
 
 describe('makeRefObj', () => {
-	it('returns an object', () => {
-		expect(makeRefObj([])).to.be.an('object');
-	});
 	it('returns an empty object if passed an empty array', () => {
 		expect(makeRefObj([])).to.eql({});
 	});
@@ -111,9 +105,6 @@ describe('makeRefObj', () => {
 });
 
 describe.only('formatComments', () => {
-	it('returns an array', () => {
-		expect(formatComments()).to.be.an('array');
-	});
 	it('returns an empty array if passed through an empty array', () => {
 		expect(formatComments()).to.eql([]);
 	});
