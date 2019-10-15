@@ -1,0 +1,6 @@
+{
+    "prettier.spaceBeforeFunctionParen": true,
+    "prettier.tabWidth": 2,
+    "prettier.arrayExpand": true,
+    "editor.formatOnSave": true
+}
