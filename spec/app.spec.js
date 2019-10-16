@@ -25,13 +25,63 @@ describe('app', () => {
 					});
 				});
 			});
+			describe('other methods', () => {
+				it('status:405 for all invalid methods on path', () => {
+					return request(app).post('/api/topics').expect(405).then(({ body }) => {
+						expect(body.msg).to.equal('invalid method');
+					});
+				});
+			});
 		});
 		describe('/users', () => {
 			describe('/:username', () => {
-				it('status:200 and returns the user info by username', () => {
-					return request(app).get('/api/users/rogersop').expect(200).then(({ body }) => {
-						expect(body).to.be.an('object');
-						expect(body.user[0]).to.contain.keys('avatar_url', 'name', 'username');
+				describe('GET', () => {
+					it('status:200 and returns the user info by username', () => {
+						return request(app).get('/api/users/rogersop').expect(200).then(({ body }) => {
+							expect(body).to.be.an('object');
+							expect(body.user[0]).to.contain.keys('avatar_url', 'name', 'username');
+						});
+					});
+				});
+				describe('other methods', () => {
+					it('status:405 for all other invalid methods on path', () => {
+						return request(app).post('/api/users/umayr95').expect(405).then(({ body }) => {
+							expect(body.msg).to.equal('invalid method');
+						});
+					});
+				});
+			});
+		});
+		describe('/articles', () => {
+			describe('/:article_id', () => {
+				describe('GET', () => {
+					it('status:200 and returns the requested article', () => {
+						return request(app).get('/api/articles/1').expect(200).then(({ body }) => {
+							expect(body.article).to.contain.keys(
+								'article_id',
+								'title',
+								'body',
+								'votes',
+								'topic',
+								'author',
+								'created_at',
+								'comment_count'
+							);
+							expect(body.article.article_id).to.equal(1);
+						});
+					});
+					it('status:200 and requested article has a count of comments linked to the article', () => {
+						return request(app).get('/api/articles/1').expect(200).then(({ body }) => {
+							expect(body.article.comment_count).to.equal('13');
+						});
+					});
+				});
+				describe('PATCH', () => {});
+				describe('invalid methods', () => {
+					it('status:405 for any invalid methods on this path', () => {
+						return request(app).post('/api/articles/1').expect(405).then(({ body }) => {
+							expect(body.msg).to.equal('invalid method');
+						});
 					});
 				});
 			});
