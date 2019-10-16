@@ -1,4 +1,4 @@
-const { fetchArticleById, updateArticle } = require('../models/articlesM');
+const { fetchArticleById, updateArticle, insertCommentToArticle } = require('../models/articlesM');
 
 getArticleById = (req, res, next) => {
 	const { article_id } = req.params;
@@ -22,4 +22,13 @@ patchArticle = (req, res, next) => {
 		.catch(next);
 };
 
-module.exports = { getArticleById, patchArticle };
+postCommentToArticle = (req, res, next) => {
+	insertCommentToArticle(req.params, req.body)
+		.then(([ comment
+		]) => {
+			res.status(201).send({ comment });
+		})
+		.catch(next);
+};
+
+module.exports = { getArticleById, patchArticle, postCommentToArticle };

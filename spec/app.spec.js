@@ -52,7 +52,7 @@ describe('app', () => {
 				});
 			});
 		});
-		describe.only('/articles', () => {
+		describe('/articles', () => {
 			describe('/:article_id', () => {
 				describe('GET', () => {
 					it('status:200 and returns the requested article', () => {
@@ -107,11 +107,49 @@ describe('app', () => {
 						});
 					});
 				});
-				describe.only('invalid methods', () => {
+				describe('invalid methods', () => {
 					it('status:405 for any invalid methods on this path', () => {
 						return request(app).put('/api/articles/1').expect(405).then(({ body }) => {
 							expect(body.msg).to.equal('invalid method');
 						});
+					});
+				});
+			});
+			describe('/:article_id/comments', () => {
+				describe('POST', () => {
+					it('status:201 and returns the successfully created comment', () => {
+						return request(app)
+							.post('/api/articles/1/comments')
+							.send({ username: 'rogersop', body: 'great article friend' })
+							.expect(201)
+							.then(({ body }) => {
+								expect(body.comment).to.contain.keys(
+									'comment_id',
+									'author',
+									'article_id',
+									'votes',
+									'created_at',
+									'body'
+								);
+							});
+					});
+					it('status:400 if invalid parametric used', () => {
+						return request(app)
+							.post('/api/articles/fruit/comments')
+							.send({ username: 'rogersop', body: 'great article friend' })
+							.expect(400)
+							.then(({ body }) => {
+								expect(body.msg).to.equal('bad request');
+							});
+					});
+					it('status:400 if req body is invalid', () => {
+						return request(app)
+							.post('/api/articles/1/comments')
+							.send({ username: 2, body: 2 })
+							.expect(400)
+							.then(({ body }) => {
+								expect(body.msg).to.equal('bad request');
+							});
 					});
 				});
 			});

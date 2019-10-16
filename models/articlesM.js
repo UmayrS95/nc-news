@@ -12,3 +12,9 @@ exports.fetchArticleById = (article_id) => {
 exports.updateArticle = (inc_votes, articleId) => {
 	return connection('articles').where('article_id', '=', articleId).increment('votes', inc_votes).returning('*');
 };
+
+exports.insertCommentToArticle = ({ article_id }, commentInfo) => {
+	return connection('comments')
+		.insert({ article_id, body: commentInfo.body, author: commentInfo.username })
+		.returning('*');
+};
