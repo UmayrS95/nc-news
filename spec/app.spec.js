@@ -52,7 +52,7 @@ describe('app', () => {
 				});
 			});
 		});
-		describe('/articles', () => {
+		describe.only('/articles', () => {
 			describe('/:article_id', () => {
 				describe('GET', () => {
 					it('status:200 and returns the requested article', () => {
@@ -75,11 +75,41 @@ describe('app', () => {
 							expect(body.article.comment_count).to.equal('13');
 						});
 					});
+					it('status:400 if bad request', () => {
+						return request(app).get('/api/articles/tigers').expect(400).then(({ body }) => {
+							expect(body.msg).to.equal('bad request');
+						});
+					});
 				});
-				describe('PATCH', () => {});
-				describe('invalid methods', () => {
+				describe('PATCH', () => {
+					it('status:200 and returns article with updated key', () => {
+						return request(app).patch('/api/articles/1').send({ inc_votes: 1 }).expect(200).then(({ body }) => {
+							expect(body.article).to.contain.keys(
+								'article_id',
+								'title',
+								'body',
+								'votes',
+								'topic',
+								'author',
+								'created_at'
+							);
+							expect(body.article.votes).to.equal(101);
+						});
+					});
+					it('status:400 if invalid parametric used', () => {
+						return request(app).patch('/api/articles/fruit').send({ inc_votes: 1 }).expect(400).then(({ body }) => {
+							expect(body.msg).to.equal('bad request');
+						});
+					});
+					it('status:400 if invalid key value usesd on body in req', () => {
+						return request(app).patch('/api/articles/1').send({ inc_votes: 'apple' }).expect(400).then(({ body }) => {
+							expect(body.msg).to.equal('bad request');
+						});
+					});
+				});
+				describe.only('invalid methods', () => {
 					it('status:405 for any invalid methods on this path', () => {
-						return request(app).post('/api/articles/1').expect(405).then(({ body }) => {
+						return request(app).put('/api/articles/1').expect(405).then(({ body }) => {
 							expect(body.msg).to.equal('invalid method');
 						});
 					});
