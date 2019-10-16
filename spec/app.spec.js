@@ -152,6 +152,38 @@ describe('app', () => {
 							});
 					});
 				});
+
+				describe.only('GET', () => {
+					it('status:200 and responds with an array of comments linked to the article', () => {
+						return request(app).get('/api/articles/1/comments').expect(200).then(({ body }) => {
+							expect(body.comments).to.be.an('array');
+						});
+					});
+					it('defaults order of comments by created_at in descending', () => {
+						return request(app).get('/api/articles/1/comments').expect(200).then(({ body }) => {
+							expect(body.comments[0].comment_id).to.equal(2);
+						});
+					});
+					it('can take queries to order by a selected key in asc/desc', () => {
+						return request(app)
+							.get('/api/articles/1/comments?sort_by=author&&order=desc')
+							.expect(200)
+							.then(({ body }) => {
+								expect(body.comments[0].author).to.equal('icellusedkars');
+							});
+					});
+				});
+				describe('invalid methods', () => {
+					it('status:405 if an invalid method is used on this path', () => {
+						return request(app)
+							.put('/api/articles/1/comments')
+							.send({ username: 'rogersop', body: 'great article friend' })
+							.expect(405)
+							.then(({ body }) => {
+								expect(body.msg).to.equal('invalid method');
+							});
+					});
+				});
 			});
 		});
 	});

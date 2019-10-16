@@ -18,3 +18,7 @@ exports.insertCommentToArticle = ({ article_id }, commentInfo) => {
 		.insert({ article_id, body: commentInfo.body, author: commentInfo.username })
 		.returning('*');
 };
+
+exports.fetchCommentsByArticleId = (article_id, sort_by = 'created_at', order = 'desc') => {
+	return connection('comments').where('article_id', '=', article_id).select('*').orderBy(sort_by, order);
+};

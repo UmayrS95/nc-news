@@ -1,4 +1,9 @@
-const { fetchArticleById, updateArticle, insertCommentToArticle } = require('../models/articlesM');
+const {
+	fetchArticleById,
+	updateArticle,
+	insertCommentToArticle,
+	fetchCommentsByArticleId
+} = require('../models/articlesM');
 
 getArticleById = (req, res, next) => {
 	const { article_id } = req.params;
@@ -31,4 +36,15 @@ postCommentToArticle = (req, res, next) => {
 		.catch(next);
 };
 
-module.exports = { getArticleById, patchArticle, postCommentToArticle };
+getCommentsByArticleId = (req, res, next) => {
+	const { sort_by } = req.query;
+	const { order } = req.query;
+	const { article_id } = req.params;
+	fetchCommentsByArticleId(article_id, sort_by, order)
+		.then((comments) => {
+			res.status(200).send({ comments });
+		})
+		.catch(next);
+};
+
+module.exports = { getArticleById, patchArticle, postCommentToArticle, getCommentsByArticleId };
