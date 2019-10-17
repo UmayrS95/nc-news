@@ -1,9 +1,13 @@
 exports.handle400s = (err, req, res, next) => {
 	const errorCodes = [
 		'22P02',
-		'23503'
+		'23503',
+		'42703'
 	];
 	if (errorCodes.includes(err.code)) {
+		if (err.code === '23503') {
+			res.status(400).send({ msg: 'user does not exist or comment is invalid' });
+		}
 		res.status(400).send({ msg: 'bad request' });
 	} else {
 		next(err);

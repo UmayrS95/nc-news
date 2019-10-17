@@ -1,9 +1,13 @@
 process.env.NODE_ENV = 'test';
 
-const { expect } = require('chai');
+const chai = require('chai');
+const { expect } = chai;
+const chaiSorted = require('chai-sorted');
 const request = require('supertest');
 const connection = require('../db/connection');
 const app = require('../app');
+
+chai.use(chaiSorted);
 
 beforeEach(() => connection.seed.run());
 after(() => connection.destroy());
@@ -53,6 +57,67 @@ describe('app', () => {
 			});
 		});
 		describe('/articles', () => {
+			describe('GET', () => {
+				it('status:200 and responds with an array of articles with a comment count key for each article', () => {
+					return request(app).get('/api/articles').expect(200).then(({ body }) => {
+						expect(body.articles).to.be.an('array');
+						console.log(body);
+						expect(body.articles[0]).to.contain.keys(
+							'author',
+							'title',
+							'article_id',
+							'topic',
+							'created_at',
+							'votes',
+							'comment_count'
+						);
+					});
+				});
+				it('defaults order of articles by date in desc order', () => {
+					return request(app).get('/api/articles').expect(200).then(({ body }) => {
+						expect(body.articles).to.be.descendingBy('created_at');
+					});
+				});
+				it('can take queries to order by a valid column in asc/desc', () => {
+					return request(app).get('/api/articles?sort_by=author&&order=asc').expect(200).then(({ body }) => {
+						expect(body.articles).to.sortedBy('author', { ascending: true });
+					});
+				});
+				it('can take queries to order by any valid column in asc/desc', () => {
+					return request(app).get('/api/articles?sort_by=author&&order=asc').expect(200).then(({ body }) => {
+						expect(body.articles).to.be.ascendingBy('author');
+					});
+				});
+				it('can take a filter by author query', () => {
+					return request(app).get('/api/articles?author=butter_bridge').expect(200).then(({ body }) => {
+						expect(body.articles[0].author).to.equal('butter_bridge');
+					});
+				});
+				it('can filter by topic query', () => {
+					return request(app).get('/api/articles?topic=cats').expect(200).then(({ body }) => {
+						console.log(body.articles);
+						expect(body.articles[0].topic).to.equal('cats');
+					});
+				});
+				it('can filter by both topic and author queries', () => {
+					return request(app).get('/api/articles?topic=mitch&&author=rogersop').expect(200).then(({ body }) => {
+						console.log(body);
+						expect(body.articles[0].topic).to.equal('mitch');
+						expect(body.articles[0].author).to.equal('rogersop');
+					});
+				});
+			});
+			describe('invalid methods', () => {
+				it('status:405 if invalid method is used on this path', () => {
+					return request(app)
+						.post('/api/articles')
+						.send({ body: 'not allowed to post' })
+						.expect(405)
+						.then(({ body }) => {
+							expect(body.msg).to.equal('invalid method');
+						});
+				});
+			});
 			describe('/:article_id', () => {
 				describe('GET', () => {
 					it('status:200 and returns the requested article', () => {
@@ -148,12 +213,12 @@ describe('app', () => {
 							.send({ username: 2, body: 2 })
 							.expect(400)
 							.then(({ body }) => {
-								expect(body.msg).to.equal('bad request');
+								expect(body.msg).to.equal('user does not exist or comment is invalid');
 							});
 					});
 				});
 
-				describe.only('GET', () => {
+				describe('GET', () => {
 					it('status:200 and responds with an array of comments linked to the article', () => {
 						return request(app).get('/api/articles/1/comments').expect(200).then(({ body }) => {
 							expect(body.comments).to.be.an('array');
@@ -161,7 +226,8 @@ describe('app', () => {
 					});
 					it('defaults order of comments by created_at in descending', () => {
 						return request(app).get('/api/articles/1/comments').expect(200).then(({ body }) => {
-							expect(body.comments[0].comment_id).to.equal(2);
+							console.log(body);
+							expect(body.comments).to.be.descendingBy('created_at');
 						});
 					});
 					it('can take queries to order by a selected key in asc/desc', () => {
@@ -169,7 +235,34 @@ describe('app', () => {
 							.get('/api/articles/1/comments?sort_by=author&&order=desc')
 							.expect(200)
 							.then(({ body }) => {
-								expect(body.comments[0].author).to.equal('icellusedkars');
+								expect(body.comments).to.be.sortedBy('author', { descending: true });
+							});
+					});
+					it('status:400 if invalid parametric used', () => {
+						return request(app).get('/api/articles/fruit/comments').expect(400).then(({ body }) => {
+							expect(body.msg).to.equal('bad request');
+						});
+					});
+					it('status:404 if what is requested from existed article does not exist in article keys', () => {
+						return request(app).get('/api/articles/1/fridges').expect(404).then(({ body }) => {
+							expect(body.msg).to.equal('path not found');
+						});
+					});
+					it('status:400 if an invalid sort_by query is requested ', () => {
+						return request(app)
+							.get('/api/articles/1/comments?sort_by=melons&&order=desc')
+							.expect(400)
+							.then(({ body }) => {
+								expect(body.msg).to.equal('bad request');
+							});
+					});
+					it('defaults order to desc if order query is invalid', () => {
+						return request(app)
+							.get('/api/articles/1/comments?sort_by=author&&order=everyway')
+							.expect(200)
+							.then(({ body }) => {
+								console.log(body);
+								expect(body.comments).to.be.sortedBy('author', { descending: true });
 							});
 					});
 				});
