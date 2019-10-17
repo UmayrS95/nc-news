@@ -53,9 +53,14 @@ getAllArticles = (req, res, next) => {
 	const { order } = req.query;
 	const { author } = req.query;
 	const { topic } = req.query;
-	fetchAllArticles(sort_by, order, author, topic).then((articles) => {
-		res.status(200).send({ articles });
-	});
+	fetchAllArticles(sort_by, order, author, topic)
+		.then((articles) => {
+			res.status(200).send({ articles });
+		})
+		.catch((err) => {
+			console.log(err);
+			next(err);
+		});
 };
 
 module.exports = { getArticleById, patchArticle, postCommentToArticle, getCommentsByArticleId, getAllArticles };

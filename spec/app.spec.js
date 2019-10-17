@@ -101,7 +101,6 @@ describe('app', () => {
 				});
 				it('can filter by both topic and author queries', () => {
 					return request(app).get('/api/articles?topic=mitch&&author=rogersop').expect(200).then(({ body }) => {
-						console.log(body);
 						expect(body.articles[0].topic).to.equal('mitch');
 						expect(body.articles[0].author).to.equal('rogersop');
 					});
@@ -275,6 +274,37 @@ describe('app', () => {
 							.then(({ body }) => {
 								expect(body.msg).to.equal('invalid method');
 							});
+					});
+				});
+			});
+		});
+		describe('/comments/:comment_id', () => {
+			describe('PATCH', () => {
+				it('status:200 and responds with updated comment', () => {
+					return request(app).patch('/api/comments/1').send({ inc_votes: 1 }).expect(200).then(({ body }) => {
+						expect(body.comment.votes).to.equal(17);
+					});
+				});
+				it('status:400 if invalid parametric used', () => {
+					return request(app).patch('/api/comments/bananas').send({ inc_votes: 1 }).expect(400).then(({ body }) => {
+						expect(body.msg).to.equal('bad request');
+					});
+				});
+				it('status:400 if invalid key value usesd on body in req', () => {
+					return request(app).patch('/api/comments/1').send({ inc_votes: 'apple' }).expect(400).then(({ body }) => {
+						expect(body.msg).to.equal('bad request');
+					});
+				});
+			});
+			describe('DELETE', () => {
+				it('status:204 with no content', () => {
+					return request(app).del('/api/comments/1').expect(204);
+				});
+			});
+			describe('invalid methods', () => {
+				it('status:405 for any invalid methods on this path', () => {
+					return request(app).put('/api/comments/1').expect(405).then(({ body }) => {
+						expect(body.msg).to.equal('invalid method');
 					});
 				});
 			});
