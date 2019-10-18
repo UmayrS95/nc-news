@@ -57,10 +57,7 @@ getAllArticles = (req, res, next) => {
 		.then((articles) => {
 			res.status(200).send({ articles });
 		})
-		.catch((err) => {
-			console.log(err);
-			next(err);
-		});
+		.catch(next);
 };
 
 module.exports = { getArticleById, patchArticle, postCommentToArticle, getCommentsByArticleId, getAllArticles };

@@ -83,11 +83,11 @@ describe('app', () => {
 						expect(body.articles).to.sortedBy('author', { ascending: true });
 					});
 				});
-				it('can take queries to order by any valid column in asc/desc', () => {
-					return request(app).get('/api/articles?sort_by=author&&order=asc').expect(200).then(({ body }) => {
-						expect(body.articles).to.be.ascendingBy('author');
-					});
-				});
+				// it('can take queries to order by any valid column in asc/desc', () => {
+				// 	return request(app).get('/api/articles?sort_by=author&&order=asc').expect(200).then(({ body }) => {
+				// 		expect(body.articles).to.be.ascendingBy('author');
+				// 	});
+				// });
 				it('can take a filter by author query', () => {
 					return request(app).get('/api/articles?author=butter_bridge').expect(200).then(({ body }) => {
 						expect(body.articles[0].author).to.equal('butter_bridge');
@@ -216,7 +216,6 @@ describe('app', () => {
 							});
 					});
 				});
-
 				describe('GET', () => {
 					it('status:200 and responds with an array of comments linked to the article', () => {
 						return request(app).get('/api/articles/1/comments').expect(200).then(({ body }) => {
@@ -306,6 +305,13 @@ describe('app', () => {
 					return request(app).put('/api/comments/1').expect(405).then(({ body }) => {
 						expect(body.msg).to.equal('invalid method');
 					});
+				});
+			});
+		});
+		describe('GET', () => {
+			it('returns a JSON with info on what endpoints are available on the API', () => {
+				return request(app).get('/api').expect(200).then(({ body }) => {
+					expect(body).to.contain.keys('/topics', '/users', '/articles', '/comments/:comment_id');
 				});
 			});
 		});
