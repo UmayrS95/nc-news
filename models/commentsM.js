@@ -7,3 +7,7 @@ exports.updateCommentVotes = (inc_votes, comment_id) => {
 exports.removeComment = (comment_id) => {
 	return connection('comments').where('comment_id', '=', comment_id).del();
 };
+
+exports.fetchCommentById = (comment_id) => {
+	return connection('comments').where('comment_id', '=', comment_id).select('*');
+};

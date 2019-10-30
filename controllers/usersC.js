@@ -1,9 +1,14 @@
 const { fetchUserByUsername } = require('../models/usersM');
 
 getUserByUsername = (req, res, next) => {
-	fetchUserByUsername(req.params)
+	const { username } = req.params;
+	fetchUserByUsername(username)
 		.then((user) => {
-			res.status(200).send({ user });
+			if (user.length === 0) {
+				res.status(404).send({ msg: 'user not found' });
+			} else {
+				res.status(200).send({ user: user[0] });
+			}
 		})
 		.catch(next);
 };

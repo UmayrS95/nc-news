@@ -9,7 +9,7 @@ exports.fetchArticleById = (article_id) => {
 		.where('articles.article_id', article_id);
 };
 
-exports.updateArticle = (inc_votes, articleId) => {
+exports.updateArticle = (inc_votes = 0, articleId) => {
 	return connection('articles').where('article_id', '=', articleId).increment('votes', inc_votes).returning('*');
 };
 
@@ -21,7 +21,7 @@ exports.insertCommentToArticle = ({ article_id }, commentInfo) => {
 
 exports.fetchCommentsByArticleId = (article_id, sort_by = 'created_at', order = 'desc') => {
 	let orderDecide = order;
-	if (order !== 'asc' || order !== 'desc') {
+	if (order !== 'asc' && order !== 'desc') {
 		orderDecide = 'desc';
 	}
 	return connection('comments').where('article_id', '=', article_id).select('*').orderBy(sort_by, orderDecide);

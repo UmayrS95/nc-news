@@ -1,6 +1,4 @@
 exports.formatDates = (list) => {
-	if (list.length === 0) return [];
-
 	const newArr = [];
 
 	list.forEach((item) => {
@@ -13,8 +11,6 @@ exports.formatDates = (list) => {
 };
 
 exports.makeRefObj = (list) => {
-	if (list.length === 0) return {};
-
 	const refObj = {};
 
 	list.forEach((item) => {
@@ -25,7 +21,6 @@ exports.makeRefObj = (list) => {
 };
 
 exports.formatComments = (comments, articleRef) => {
-	if (!comments) return [];
 	const formatted = [];
 
 	comments.forEach((comment) => {

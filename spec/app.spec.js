@@ -42,8 +42,15 @@ describe('app', () => {
 				describe('GET', () => {
 					it('status:200 and returns the user info by username', () => {
 						return request(app).get('/api/users/rogersop').expect(200).then(({ body }) => {
+							console.log(body);
+
 							expect(body).to.be.an('object');
-							expect(body.user[0]).to.contain.keys('avatar_url', 'name', 'username');
+							expect(body.user).to.contain.keys('avatar_url', 'name', 'username');
+						});
+					});
+					it('status:404 if user does not exist', () => {
+						return request(app).get('/api/users/umayr9756').expect(404).then(({ body }) => {
+							expect(body.msg).to.equal('user not found');
 						});
 					});
 				});
@@ -61,7 +68,6 @@ describe('app', () => {
 				it('status:200 and responds with an array of articles with a comment count key for each article', () => {
 					return request(app).get('/api/articles').expect(200).then(({ body }) => {
 						expect(body.articles).to.be.an('array');
-						console.log(body);
 						expect(body.articles[0]).to.contain.keys(
 							'author',
 							'title',
@@ -83,26 +89,24 @@ describe('app', () => {
 						expect(body.articles).to.sortedBy('author', { ascending: true });
 					});
 				});
-				// it('can take queries to order by any valid column in asc/desc', () => {
-				// 	return request(app).get('/api/articles?sort_by=author&&order=asc').expect(200).then(({ body }) => {
-				// 		expect(body.articles).to.be.ascendingBy('author');
-				// 	});
-				// });
 				it('can take a filter by author query', () => {
 					return request(app).get('/api/articles?author=butter_bridge').expect(200).then(({ body }) => {
 						expect(body.articles[0].author).to.equal('butter_bridge');
 					});
 				});
+				it('status:404 if author doesnt exist for an author query', () => {
+					return request(app).get('/api/articles?author=umayr9576').expect(404).then(({ body }) => {
+						expect(body.msg).to.equal('author not found');
+					});
+				});
 				it('can filter by topic query', () => {
 					return request(app).get('/api/articles?topic=cats').expect(200).then(({ body }) => {
-						console.log(body.articles);
 						expect(body.articles[0].topic).to.equal('cats');
 					});
 				});
-				it('can filter by both topic and author queries', () => {
-					return request(app).get('/api/articles?topic=mitch&&author=rogersop').expect(200).then(({ body }) => {
-						expect(body.articles[0].topic).to.equal('mitch');
-						expect(body.articles[0].author).to.equal('rogersop');
+				it('status:404 if topic doesnt exist for a topic query', () => {
+					return request(app).get('/api/articles?topic=bananas').expect(404).then(({ body }) => {
+						expect(body.msg).to.equal('topic not found');
 					});
 				});
 			});
@@ -136,12 +140,19 @@ describe('app', () => {
 					});
 					it('status:200 and requested article has a count of comments linked to the article', () => {
 						return request(app).get('/api/articles/1').expect(200).then(({ body }) => {
+							console.log(body);
+
 							expect(body.article.comment_count).to.equal('13');
 						});
 					});
 					it('status:400 if bad request', () => {
 						return request(app).get('/api/articles/tigers').expect(400).then(({ body }) => {
 							expect(body.msg).to.equal('bad request');
+						});
+					});
+					it('status:404 if article id does not exist', () => {
+						return request(app).get('/api/articles/10000').expect(404).then(({ body }) => {
+							expect(body.msg).to.equal('article not found');
 						});
 					});
 				});
@@ -168,6 +179,20 @@ describe('app', () => {
 					it('status:400 if invalid key value usesd on body in req', () => {
 						return request(app).patch('/api/articles/1').send({ inc_votes: 'apple' }).expect(400).then(({ body }) => {
 							expect(body.msg).to.equal('bad request');
+						});
+					});
+					it('ignores patch requests when no body is given', () => {
+						return request(app).patch('/api/articles/1').send({}).expect(200).then(({ body }) => {
+							expect(body.article).to.contain.keys(
+								'article_id',
+								'title',
+								'body',
+								'votes',
+								'topic',
+								'author',
+								'created_at'
+							);
+							expect(body.article.votes).to.equal(100);
 						});
 					});
 				});
@@ -215,6 +240,20 @@ describe('app', () => {
 								expect(body.msg).to.equal('user does not exist or comment is invalid');
 							});
 					});
+					it('status:400 if req body doesnt contain the right keys', () => {
+						return request(app).post('/api/articles/1/comments').send({}).expect(400).then(({ body }) => {
+							expect(body.msg).to.equal('bad request');
+						});
+					});
+					it('status:404 if article does not exist', () => {
+						return request(app)
+							.post('/api/articles/1000/comments')
+							.send({ username: 'rogersop', body: 'great article friend' })
+							.expect(404)
+							.then(({ body }) => {
+								expect(body.msg).to.equal('path not found');
+							});
+					});
 				});
 				describe('GET', () => {
 					it('status:200 and responds with an array of comments linked to the article', () => {
@@ -224,7 +263,6 @@ describe('app', () => {
 					});
 					it('defaults order of comments by created_at in descending', () => {
 						return request(app).get('/api/articles/1/comments').expect(200).then(({ body }) => {
-							console.log(body);
 							expect(body.comments).to.be.descendingBy('created_at');
 						});
 					});
@@ -259,9 +297,13 @@ describe('app', () => {
 							.get('/api/articles/1/comments?sort_by=author&&order=everyway')
 							.expect(200)
 							.then(({ body }) => {
-								console.log(body);
 								expect(body.comments).to.be.sortedBy('author', { descending: true });
 							});
+					});
+					it('status:404 if valid article id but does not exist', () => {
+						return request(app).get('/api/articles/10000/comments').expect(404).then(({ body }) => {
+							expect(body.msg).to.equal('article not found');
+						});
 					});
 				});
 				describe('invalid methods', () => {
@@ -281,6 +323,8 @@ describe('app', () => {
 			describe('PATCH', () => {
 				it('status:200 and responds with updated comment', () => {
 					return request(app).patch('/api/comments/1').send({ inc_votes: 1 }).expect(200).then(({ body }) => {
+						console.log(body);
+
 						expect(body.comment.votes).to.equal(17);
 					});
 				});
@@ -294,10 +338,20 @@ describe('app', () => {
 						expect(body.msg).to.equal('bad request');
 					});
 				});
+				it('status:404 if valid id does not exist', () => {
+					return request(app).patch('/api/comments/1000').send({ inc_votes: 1 }).expect(404).then(({ body }) => {
+						expect(body.msg).to.equal('comment not found');
+					});
+				});
 			});
 			describe('DELETE', () => {
 				it('status:204 with no content', () => {
 					return request(app).del('/api/comments/1').expect(204);
+				});
+				it('status:404 if valid comment id does not exist', () => {
+					return request(app).del('/api/comments/1000').expect(404).then(({ body }) => {
+						expect(body.msg).to.equal('comment not found');
+					});
 				});
 			});
 			describe('invalid methods', () => {
@@ -312,6 +366,11 @@ describe('app', () => {
 			it('returns a JSON with info on what endpoints are available on the API', () => {
 				return request(app).get('/api').expect(200).then(({ body }) => {
 					expect(body).to.contain.keys('/topics', '/users', '/articles', '/comments/:comment_id');
+				});
+			});
+			it('status:405 if invalid method is used on /api', () => {
+				return request(app).patch('/api').expect(405).then(({ body }) => {
+					expect(body.msg).to.equal('invalid method');
 				});
 			});
 		});
