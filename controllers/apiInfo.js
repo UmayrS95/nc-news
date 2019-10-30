@@ -1,12 +1,108 @@
 apiInfo = (req, res, next) => {
 	res.status(200).send({
-		'/topics': 'Can perform a GET request on this route which will give back all the available topics',
-		'/users':
-			'Can perform a GET request on this endpoint with a parametric of a username (/:username) which will return a single users info',
-		'/articles':
-			"Can perform a GET request on this route which will return all article info. Optionally you can add an id parametric (/api/articles/:article_id) to get an article by it's id. As well as a GET request you can perform a PATCH on this route to update the votes for whichever article you want. You must send this as an object in this format {inc_votes: <number here>}. If you wish to filter the articles by author or topic (or both), you can attach a query to the articles endpoint (/api/articles?<author or topic here>=<valid author or topic here>). If you want the  comments associated with a particular article, use a GET request on the endpoint of comments added after the article id (/api/articles/:article_id/comments).  This endpoint can also take queries to sort the comments recieved in a valid way (/api/articles/:article_id/comments?sort_by=<valid sort by value here e.g. author>). If you want these ordered you can do this by adding an order query (/api/articles/:article_id/comment?order=<asc for ascending order, desc for descending order>). These queries can be chained together with &&. You can also add your own comment on this endpoint by performing a POST request. You must send the comment with a valid username in this format: {username: <username here>, body: <comment here>}.",
-		'/comments/:comment_id':
-			'This endpoint allows you to perform either a PATCH request to update the votes of a specific comment, or a DELETE request to delete a specific comment. For the PATCH request, you must send the vote increment you do with the articles PATCH request: {inc_votes: <number here>}. For the DELETE request, simply make the delete request on the comment id of the comment you wish to delete.'
+		'GET /api': {
+			description: 'serves up a json representation of all the available endpoints of the api'
+		},
+		'GET /api/topics': {
+			description: 'serves an array of all topics',
+			queries: [],
+			exampleResponse: {
+				topics: [
+					{ slug: 'football', description: 'Footie!' }
+				]
+			}
+		},
+		'GET /api/users/:username': {
+			description: 'serves a user by their username',
+			queries: [],
+			exampleResponse: {
+				user: {
+					avatar_url: 'https://avatars2.githubusercontent.com/u/24394918?s=400&v=4',
+					name: 'paul',
+					username: 'rogersop'
+				}
+			}
+		},
+		'GET /api/articles': {
+			description: 'serves an array of all topics',
+			queries: [
+				'author',
+				'topic',
+				'sort_by',
+				'order'
+			],
+			exampleResponse: {
+				articles: [
+					{
+						title: 'Seafood substitutions are increasing',
+						topic: 'cooking',
+						author: 'weegembump',
+						body: 'Text from the article..',
+						created_at: 1527695953341
+					}
+				]
+			}
+		},
+		'GET /api/articles/:article_id': {
+			description: "serves a single article by it's id",
+			queries: [],
+			exampleResponse: {
+				article: {
+					article_id: 1,
+					title: 'Living in the shadow of a great man',
+					body: 'I find this existence challenging',
+					votes: 100,
+					topic: 'mitch',
+					author: 'butter_bridge',
+					created_at: '2018-11-15T12:21:54.171Z',
+					comment_count: '13'
+				}
+			}
+		},
+		'POST /api/:article_id/comments': {
+			description: "allows you to post a comment to an article by it's id",
+			queries: [],
+			exampleRequest: { username: 'rogersop', body: 'great article friend' },
+			exampleResponse: {
+				comment: {
+					comment_id: 1,
+					author: 'username',
+					article_id: 1,
+					votes: 17,
+					created_at: '2017-11-22T12:36:03.389Z',
+					body: 'Text from posted comment'
+				}
+			}
+		},
+		'GET /api/:article_id/comments': {
+			description: 'serves an array of comments linked to an article',
+			queries: [],
+			exampleResponse: {
+				comments: [
+					'an array of comment objects'
+				]
+			}
+		},
+		'PATCH /api/comments/:comment_id': {
+			description: "allows you to upvote a comment by it's id",
+			queries: [],
+			exampleRequest: { inc_votes: 1 },
+			exampleResponse: {
+				comment: {
+					comment_id: 1,
+					author: 'butter_bridge',
+					article_id: 9,
+					votes: 17,
+					created_at: '2017-11-22T12:36:03.389Z',
+					body: "Oh, I've got compassion running out of my nose, pal! I'm the Sultan of Sentiment!"
+				}
+			}
+		},
+		'DELETE /api/comments/:comment_id': {
+			description: "allows you to delete a comment by it's id",
+			queries: [],
+			exampleResponse: {}
+		}
 	});
 };
 
